@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useMemo,
+} from "react";
 import { useParams } from "next/navigation";
 import { useChat, Message } from "@ai-sdk/react";
 
@@ -290,7 +296,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const [initialMessages, setInitialMessages] = useState(CHATS[conversationId]);
+  const initialMessages = useMemo(() => {
+    return CHATS[conversationId];
+  }, [conversationId]);
+  console.log(initialMessages);
   const { messages } = useChat({
     id: conversationId,
     initialMessages,
