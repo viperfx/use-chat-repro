@@ -25,7 +25,9 @@ export default function Chat() {
           {messages.map((message) => (
             <ol key={message.id}>
               {message.parts?.map((part, idx) => (
-                <li key={idx}>{part?.text}</li>
+                <li key={idx}>
+                  {part.type} {part?.text}
+                </li>
               ))}
             </ol>
           ))}

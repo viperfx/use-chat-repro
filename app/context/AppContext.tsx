@@ -1,313 +1,85 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useMemo,
-} from "react";
+import React, { createContext, useContext, ReactNode, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useChat, Message } from "@ai-sdk/react";
+import useSWR from "swr";
 
 interface AppContextType {
   messages: Message[];
-  conversationId: string;
+  conversationId: string | undefined;
   keys: string[];
+  isLoadingMessages: boolean;
+  isLoadingKeys: boolean;
 }
 
-const CHATS = {
-  "chat-1": [
-    {
-      annotations: [
-        {
-          attachments: [],
-          feedback: null,
-          parent_message_id: null,
-          type: "human",
-          user: {
-            created_at: "2025-03-07T15:21:29.259997Z",
-            email: "tharshan@elvex.ai",
-            first_name: "Tharshan",
-            id: "2tzhcT2HoH5zj8MEg1ILjDF2s0k",
-            last_login: null,
-            last_name: "M",
-            picture_url:
-              "https://lh3.googleusercontent.com/a/ACg8ocL5Obp5mg4fjYlPx6mFEs26mxDA_tXzElvsZyX-loETRYlUJ0NcUu1fiePUPL79IGS_084y7mRe4MEkdE5LkzCUpVsL55I=s96-c",
-          },
-        },
-      ],
-      content: "Can you generate a CLI RPG game in python",
-      createdAt: "2025-05-05T14:35:05.915268Z",
-      id: "2wgGGLXVkBwXv7dAB0gTOjHdzCr",
-      parts: [
-        {
-          text: "Can you generate a CLI RPG game in python",
-          type: "text",
-        },
-      ],
-      role: "user",
-    },
-    {
-      annotations: [
-        {
-          app: {
-            full_model_name: "openai:gpt-4o",
-            icon_config: {
-              hue: 135,
-              icon: "HeadCircuit",
-            },
-            id: "2tzhgv8yirUP1Aj8bdqbp2XzJcl",
-            is_disabled: false,
-            is_home_app: true,
-            name: "elvex",
-          },
-          app_version: {
-            enabled_tools: [
-              "get_spreadsheet_overview",
-              "run_sql_on_datasource_file",
-              "create_draft",
-              "update_draft",
-              "search_google",
-              "get_webpage_content",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-            ],
-            id: "2tzhgvEOmLTs3cEhTwrF4wb6Ydm",
-            is_system_app: false,
-            version: 1,
-          },
-          parent_message_id: "2wgGGLXVkBwXv7dAB0gTOjHdzCr",
-          provider: {
-            id: "2tzhcTJCw3wy4mK85NXdv0jsFil",
-            name: "OpenAI",
-            provider_name: "openai",
-          },
-          type: "ai",
-        },
-      ],
-      content:
-        'I\'ve created a basic CLI RPG game in Python. The game includes character creation, a simple battle system, and basic game mechanics. You can view and modify the code in the draft titled "CLI RPG Game in Python."\n\nFeel free to expand on this code by adding more features like multiple enemies, items, or a leveling system! If you have any questions or need further assistance, let me know.',
-      createdAt: "2025-05-05T14:35:18.092033Z",
-      id: "2wgGHq4SzcmKOlPEwYOTDNCXjKz",
-      parts: [
-        {
-          text: "Creating a CLI RPG game in Python is a fun project! I'll create a basic structure for you, including character creation, a simple battle system, and some basic game mechanics. Let's get started.\n\nI'll create a draft with the Python code for the game.",
-          type: "text",
-        },
-        {
-          toolInvocation: {
-            args: {
-              content:
-                'import random\n\nclass Character:\n    def __init__(self, name, health, attack, defense):\n        self.name = name\n        self.health = health\n        self.attack = attack\n        self.defense = defense\n\n    def is_alive(self):\n        return self.health > 0\n\n    def take_damage(self, damage):\n        self.health -= damage\n        if self.health < 0:\n            self.health = 0\n\n    def attack_enemy(self, enemy):\n        damage = self.attack - enemy.defense\n        if damage > 0:\n            enemy.take_damage(damage)\n        return damage\n\n\ndef create_character():\n    name = input("Enter your character\'s name: ")\n    return Character(name, health=100, attack=20, defense=10)\n\n\ndef create_enemy():\n    return Character("Goblin", health=50, attack=15, defense=5)\n\n\ndef battle(player, enemy):\n    print(f"A wild {enemy.name} appears!")\n    while player.is_alive() and enemy.is_alive():\n        action = input("Do you want to (A)ttack or (R)un? ").lower()\n        if action == \'a\':\n            damage = player.attack_enemy(enemy)\n            print(f"You attacked the {enemy.name} for {damage} damage.")\n            if enemy.is_alive():\n                damage = enemy.attack_enemy(player)\n                print(f"The {enemy.name} attacked you for {damage} damage.")\n        elif action == \'r\':\n            print("You ran away!")\n            break\n        else:\n            print("Invalid action. Please choose \'A\' or \'R\'.")\n\n    if not player.is_alive():\n        print("You have been defeated!")\n    elif not enemy.is_alive():\n        print(f"You defeated the {enemy.name}!")\n\n\ndef main():\n    player = create_character()\n    enemy = create_enemy()\n    battle(player, enemy)\n\n\nif __name__ == "__main__":\n    main()',
-              identifier: "cli-rpg-game-python",
-              title: "CLI RPG Game in Python",
-              type: "code/python",
-            },
-            result:
-              'import random\n\nclass Character:\n    def __init__(self, name, health, attack, defense):\n        self.name = name\n        self.health = health\n        self.attack = attack\n        self.defense = defense\n\n    def is_alive(self):\n        return self.health > 0\n\n    def take_damage(self, damage):\n        self.health -= damage\n        if self.health < 0:\n            self.health = 0\n\n    def attack_enemy(self, enemy):\n        damage = self.attack - enemy.defense\n        if damage > 0:\n            enemy.take_damage(damage)\n        return damage\n\n\ndef create_character():\n    name = input("Enter your character\'s name: ")\n    return Character(name, health=100, attack=20, defense=10)\n\n\ndef create_enemy():\n    return Character("Goblin", health=50, attack=15, defense=5)\n\n\ndef battle(player, enemy):\n    print(f"A wild {enemy.name} appears!")\n    while player.is_alive() and enemy.is_alive():\n        action = input("Do you want to (A)ttack or (R)un? ").lower()\n        if action == \'a\':\n            damage = player.attack_enemy(enemy)\n            print(f"You attacked the {enemy.name} for {damage} damage.")\n            if enemy.is_alive():\n                damage = enemy.attack_enemy(player)\n                print(f"The {enemy.name} attacked you for {damage} damage.")\n        elif action == \'r\':\n            print("You ran away!")\n            break\n        else:\n            print("Invalid action. Please choose \'A\' or \'R\'.")\n\n    if not player.is_alive():\n        print("You have been defeated!")\n    elif not enemy.is_alive():\n        print(f"You defeated the {enemy.name}!")\n\n\ndef main():\n    player = create_character()\n    enemy = create_enemy()\n    battle(player, enemy)\n\n\nif __name__ == "__main__":\n    main()',
-            state: "result",
-            step: null,
-            toolCallId: "call_MBdu4SpcAlhLfbMTfQMm9yHS",
-            toolName: "create_draft",
-          },
-          type: "tool-invocation",
-        },
-        {
-          text: 'I\'ve created a basic CLI RPG game in Python. The game includes character creation, a simple battle system, and basic game mechanics. You can view and modify the code in the draft titled "CLI RPG Game in Python."\n\nFeel free to expand on this code by adding more features like multiple enemies, items, or a leveling system! If you have any questions or need further assistance, let me know.',
-          type: "text",
-        },
-      ],
-      role: "assistant",
-    },
-  ],
-  "chat-2": [
-    {
-      id: "a44c1291-7e1f-45fd-938f-e10b985fb702",
-      createdAt: "2025-05-14T13:44:46.972619Z",
-      content: "Hello",
-      role: "user",
-      annotations: [
-        {
-          type: "human",
-          parent_message_id: null,
-          user: {
-            id: "2tzhcT2HoH5zj8MEg1ILjDF2s0k",
-            created_at: "2025-03-07T15:21:29.259997Z",
-            email: "tharshan@elvex.ai",
-            first_name: "Tharshan",
-            last_name: "M",
-            last_login: null,
-            picture_url:
-              "https://lh3.googleusercontent.com/a/ACg8ocL5Obp5mg4fjYlPx6mFEs26mxDA_tXzElvsZyX-loETRYlUJ0NcUu1fiePUPL79IGS_084y7mRe4MEkdE5LkzCUpVsL55I=s96-c",
-          },
-          attachments: [],
-          feedback: null,
-        },
-      ],
-      parts: [
-        {
-          type: "text",
-          text: "Hello",
-        },
-      ],
-    },
-    {
-      id: "run--af83865a-1e28-4aaa-9173-41a47b523f58",
-      createdAt: "2025-05-14T13:44:49.651448Z",
-      content: "Hello! How can I assist you today?",
-      role: "assistant",
-      annotations: [
-        {
-          type: "ai",
-          parent_message_id: "a44c1291-7e1f-45fd-938f-e10b985fb702",
-          app: {
-            id: "2tzhgv8yirUP1Aj8bdqbp2XzJcl",
-            name: "elvex",
-            icon_config: {
-              hue: 135,
-              icon: "HeadCircuit",
-            },
-            full_model_name: "openai:gpt-4o",
-            is_home_app: true,
-            is_disabled: false,
-          },
-          app_version: {
-            id: "2tzhgvEOmLTs3cEhTwrF4wb6Ydm",
-            version: 1,
-            enabled_tools: [
-              "get_spreadsheet_overview",
-              "run_sql_on_datasource_file",
-              "create_draft",
-              "update_draft",
-              "search_google",
-              "get_webpage_content",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-              "suggest_existing_app",
-              "get_current_rules",
-              "suggest_rule_update",
-              "update_draft",
-              "create_draft",
-            ],
-            is_system_app: false,
-          },
-          provider: {
-            id: "2tzhcTJCw3wy4mK85NXdv0jsFil",
-            name: "OpenAI",
-            provider_name: "openai",
-          },
-        },
-      ],
-      parts: [
-        {
-          type: "text",
-          text: "Hello! How can I assist you today?",
-        },
-      ],
-    },
-  ],
-};
+// const CHATS: Record<string, Message[]> = { ... }; // Removed CHATS constant
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+// Fetcher function for SWR to get messages for a specific chat from the API
+const fetchChatMessagesAPI = async (url: string): Promise<Message[]> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch chat messages");
+  }
+  const data = await response.json();
+  // Convert createdAt from string to Date object
+  return data.map((message: any) => ({
+    ...message,
+    createdAt: new Date(message.createdAt),
+  }));
+};
+
+// Fetcher function for SWR to get all chat keys from the API
+const fetchChatKeysAPI = async (url: string): Promise<string[]> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch chat keys");
+  }
+  return response.json();
+};
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { conversationId } = useParams<{ conversationId: string }>();
+
+  // Use SWR to fetch messages for the current conversationId from the API
+  const { data: currentChatMessages, isLoading: isLoadingMessages } = useSWR<
+    Message[]
+  >(
+    conversationId ? `/api/chat/${conversationId}` : null, // Key for SWR
+    fetchChatMessagesAPI // The fetcher function
+  );
+
+  // Use SWR to fetch all chat keys from the API
+  const { data: chatKeys, isLoading: isLoadingKeys } = useSWR<string[]>(
+    "/api/chat", // API endpoint for chat keys
+    fetchChatKeysAPI // The fetcher function
+  );
+
   const initialMessages = useMemo(() => {
-    return CHATS[conversationId];
-  }, [conversationId]);
-  console.log(initialMessages);
+    return currentChatMessages || [];
+  }, [currentChatMessages]);
+
   const { messages } = useChat({
     id: conversationId,
     initialMessages,
   });
-  const keys = Object.keys(CHATS);
+
+  const keys = useMemo(() => chatKeys || [], [chatKeys]);
 
   return (
-    <AppContext.Provider value={{ messages, conversationId, keys }}>
+    <AppContext.Provider
+      value={{
+        messages,
+        conversationId,
+        keys,
+        isLoadingMessages,
+        isLoadingKeys,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
